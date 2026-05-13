@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cuestionario – Historia del Derecho en México</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2330;
+    --border: rgba(255,255,255,0.08);
+    --accent: #c9a84c;
+    --accent2: #e8c87a;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --correct: #3fb950;
+    --wrong: #f85149;
+    --correct-bg: rgba(63,185,80,0.12);
+    --wrong-bg: rgba(248,81,73,0.12);
+    --radius: 12px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #0d1117 0%, #1a1000 50%, #0d1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 60px 24px 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 600px; height: 300px;
+    background: radial-gradient(ellipse, rgba(201,168,76,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .badge {
+    display: inline-block;
+    background: rgba(201,168,76,0.15);
+    border: 1px solid rgba(201,168,76,0.35);
+    color: var(--accent2);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 5px 16px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 900;
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero p {
+    color: var(--muted);
+    font-size: 15px;
+    max-width: 480px;
+    margin: 0 auto 32px;
+    line-height: 1.6;
+  }
+  .meta-row {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .meta-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .meta-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* PROGRESS */
+  .progress-bar-wrap {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .progress-track {
+    flex: 1;
+    height: 4px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .progress-text {
+    font-size: 13px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* MAIN */
+  main {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  /* QUESTION CARD */
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+    transition: border-color 0.2s;
+    animation: fadeUp 0.3s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .question-card:hover { border-color: rgba(201,168,76,0.2); }
+
+  .q-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .q-num {
+    flex-shrink: 0;
+    width: 36px; height: 36px;
+    background: rgba(201,168,76,0.12);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .q-text {
+    font-size: 15.5px;
+    font-weight: 500;
+    line-height: 1.55;
+    color: var(--text);
+    flex: 1;
+  }
+
+  /* OPTIONS */
+  .options { display: flex; flex-direction: column; gap: 10px; }
+
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.18s;
+    user-select: none;
+  }
+  .option:hover:not(.disabled) {
+    border-color: rgba(201,168,76,0.4);
+    background: rgba(201,168,76,0.06);
+  }
+  .option.selected {
+    border-color: rgba(201,168,76,0.5);
+    background: rgba(201,168,76,0.1);
+  }
+  .option.correct {
+    border-color: var(--correct) !important;
+    background: var(--correct-bg) !important;
+  }
+  .option.wrong {
+    border-color: var(--wrong) !important;
+    background: var(--wrong-bg) !important;
+  }
+  .option.disabled { cursor: default; }
+
+  .opt-letter {
+    flex-shrink: 0;
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    transition: all 0.18s;
+  }
+  .option.selected .opt-letter {
+    background: rgba(201,168,76,0.3);
+    border-color: var(--accent);
+    color: var(--accent2);
+  }
+  .option.correct .opt-letter {
+    background: rgba(63,185,80,0.3);
+    border-color: var(--correct);
+    color: var(--correct);
+  }
+  .option.wrong .opt-letter {
+    background: rgba(248,81,73,0.3);
+    border-color: var(--wrong);
+    color: var(--wrong);
+  }
+  .opt-text {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text);
+    flex: 1;
+    padding-top: 3px;
+  }
+
+  /* FEEDBACK */
+  .feedback {
+    display: none;
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    font-size: 13.5px;
+    line-height: 1.55;
+  }
+  .feedback.show { display: block; animation: fadeUp 0.2s ease; }
+  .feedback.correct-fb {
+    background: var(--correct-bg);
+    border: 1px solid rgba(63,185,80,0.3);
+    color: #7ee787;
+  }
+  .feedback.wrong-fb {
+    background: var(--wrong-bg);
+    border: 1px solid rgba(248,81,73,0.3);
+    color: #ff7b72;
+  }
+  .feedback strong { font-weight: 600; }
+
+  /* SUBMIT */
+  .submit-wrap {
+    text-align: center;
+    margin: 40px 0 20px;
+  }
+  .btn-submit {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #0d1117;
+    border: none;
+    padding: 16px 48px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    border-radius: 100px;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: all 0.2s;
+    box-shadow: 0 4px 24px rgba(201,168,76,0.3);
+  }
+  .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(201,168,76,0.4); }
+  .btn-submit:active { transform: scale(0.98); }
+  .btn-submit:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* RESULTS */
+  #results {
+    display: none;
+    background: var(--surface);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 20px;
+    padding: 48px 32px;
+    text-align: center;
+    margin-bottom: 40px;
+    animation: fadeUp 0.5s ease;
+  }
+  #results.show { display: block; }
+  .score-ring {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    border: 4px solid rgba(255,255,255,0.06);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    position: relative;
+  }
+  .score-ring::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border-radius: 50%;
+    background: conic-gradient(var(--accent) var(--pct, 0%), rgba(255,255,255,0.04) 0%);
+  }
+  .score-inner {
+    position: relative;
+    z-index: 1;
+    background: var(--surface);
+    border-radius: 50%;
+    width: 96px; height: 96px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .score-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .score-denom {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  #results h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+  #results p { color: var(--muted); font-size: 15px; margin-bottom: 28px; }
+  .btn-retry {
+    background: transparent;
+    color: var(--accent);
+    border: 1.5px solid var(--accent);
+    padding: 12px 36px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-retry:hover { background: rgba(201,168,76,0.1); }
+
+  @media (max-width: 520px) {
+    .question-card { padding: 20px 16px; }
+    .hero { padding: 40px 16px 36px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="badge">UAQROO · ACPDE-144 · Segundo Parcial</div>
+  <h1>Historia del <span>Derecho</span><br>en México</h1>
+  <p>30 preguntas de opción múltiple. Lee con cuidado — hay opciones diseñadas para confundir. ¡Buena suerte!</p>
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-val">30</span><span class="meta-label">Preguntas</span></div>
+    <div class="meta-item"><span class="meta-val">4</span><span class="meta-label">Opciones c/u</span></div>
+    <div class="meta-item"><span class="meta-val">∞</span><span class="meta-label">Intentos</span></div>
+  </div>
+</div>
+
+<div class="progress-bar-wrap">
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <span class="progress-text" id="progressText">0 / 30</span>
+</div>
+
+<main>
+  <div id="quiz"></div>
+
+  <div class="submit-wrap">
+    <button class="btn-submit" id="btnSubmit" onclick="submitQuiz()">Calificar examen</button>
+  </div>
+
+  <div id="results">
+    <div class="score-ring" id="scoreRing">
+      <div class="score-inner">
+        <span class="score-num" id="scoreNum">0</span>
+        <span class="score-denom">/30</span>
+      </div>
+    </div>
+    <h2 id="resultsTitle">Resultado</h2>
+    <p id="resultsMsg"></p>
+    <button class="btn-retry" onclick="retryQuiz()">Intentar de nuevo</button>
+  </div>
+</main>
+
+<script>
+const questions = [
+  {
+    q: "¿Qué caracterizó al derecho durante el Porfiriato en México?",
+    opts: [
+      "Fue un derecho progresista que promovió la igualdad social y agraria",
+      "Fue un sistema jurídico que protegió los intereses de las élites y legitimó la dictadura mediante leyes positivistas",
+      "Garantizó los derechos laborales y la libertad de prensa de forma efectiva",
+      "Estableció por primera vez el principio de división de poderes en México"
+    ],
+    answer: 1,
+    fb: "El derecho porfirista (1876-1910) se basó en el positivismo jurídico de Auguste Comte, adoptado por los llamados 'científicos' del régimen. Sus características fueron: concentración del poder en el Ejecutivo, uso de las leyes para legitimar el despojo de tierras a comunidades indígenas y campesinas (Ley Lerdo, deslinde de terrenos baldíos), protección al capital extranjero (estadounidense, inglés, francés), represión de la libertad de prensa y de asociación, y una judicatura subordinada al poder político. Aunque existían formalmente códigos civiles y penales modernos, su aplicación era selectiva y discriminatoria. Este contexto de injusticia jurídica fue una de las causas estructurales de la Revolución Mexicana."
+  },
+  {
+    q: "El Programa del Partido Liberal Mexicano (PLM) de 1906 demandaba, entre otras cosas:",
+    opts: [
+      "La reelección indefinida de Porfirio Díaz para garantizar la estabilidad",
+      "La jornada laboral de 8 horas, salario mínimo y supresión de las tiendas de raya",
+      "La creación de un banco central y la nacionalización del petróleo",
+      "El establecimiento del fuero militar para todos los ciudadanos"
+    ],
+    answer: 1,
+    fb: "El Programa del PLM de 1906, redactado principalmente por Ricardo Flores Magón desde el exilio en Estados Unidos, contenía demandas radicales para su época: jornada laboral máxima de 8 horas diarias, salario mínimo garantizado, prohibición del trabajo infantil menor de 14 años, supresión de las tiendas de raya (sistema que esclavizaba a los trabajadores al endeudarlos con su patrón), obligatoriedad de la instrucción laica, devolución de tierras a los pueblos despojados, y separación entre la Iglesia y el Estado. Muchas de estas demandas fueron posteriormente incorporadas en la Constitución de 1917, lo que convierte al PLM en un antecedente ideológico directo del texto constitucional vigente."
+  },
+  {
+    q: "¿Cuál fue la importancia JURÍDICA del Plan de San Luis (1910)?",
+    opts: [
+      "Creó una nueva constitución que reemplazó a la de 1857",
+      "Estableció el sufragio universal para hombres y mujeres",
+      "Desconoció legalmente las elecciones fraudulentas y llamó a la rebelión armada, sentando base para la legitimidad revolucionaria",
+      "Reconoció la validez de las leyes del Porfiriato siempre que fueran justas"
+    ],
+    answer: 2,
+    fb: "El Plan de San Luis, proclamado por Francisco I. Madero el 5 de octubre de 1910, tuvo una doble importancia: política, porque desconoció la reelección fraudulenta de Porfirio Díaz y proclamó nulas las elecciones de 1910; y jurídica, porque convocó al pueblo mexicano a levantarse en armas el 20 de noviembre de ese año, dotando de legitimidad jurídica a la insurrección. Desde el punto de vista del derecho, este documento fue el primer acto formal de ruptura con el orden jurídico porfirista: declaró ilegítimo al gobierno existente y propuso restablecer el sufragio efectivo y la no reelección como principios fundamentales. Además, reconocía de manera incipiente el problema agrario, señalando que los propietarios despojados serían restituidos en sus tierras."
+  },
+  {
+    q: "El Plan de Ayala (1911) fue redactado principalmente para:",
+    opts: [
+      "Apoyar el gobierno de Francisco I. Madero y consolidar su autoridad",
+      "Desconocer a Madero y exigir la restitución de tierras a comunidades despojadas durante el Porfiriato",
+      "Establecer un tratado de paz con el gobierno federal",
+      "Crear un partido político que representara a los trabajadores urbanos"
+    ],
+    answer: 1,
+    fb: "El Plan de Ayala fue proclamado por Emiliano Zapata el 28 de noviembre de 1911, desconociendo a Francisco I. Madero por considerar que había traicionado los principios agrarios de la Revolución. Sus puntos fundamentales en materia agraria fueron: la restitución inmediata de tierras, montes y aguas a los pueblos y ciudadanos despojados durante el Porfiriato; la expropiación mediante indemnización de un tercio de los monopolios de tierra para dotar a los pueblos sin ejidos; y la confiscación sin indemnización de los bienes de los 'caciques' que se opusieran al Plan. Su lema 'Tierra y Libertad' sintetizó la demanda histórica del campesinado. Los principios del Plan de Ayala influyeron directamente en la redacción del artículo 27 constitucional de 1917."
+  },
+  {
+    q: "La Constitución de 1917 fue revolucionaria en términos de derecho social porque:",
+    opts: [
+      "Fue la primera del mundo en incorporar derechos sociales como trabajo, educación y reforma agraria en un texto constitucional",
+      "Copió íntegramente el modelo constitucional estadounidense de 1787",
+      "Eliminó todos los derechos individuales para dar paso a los derechos colectivos",
+      "Solo reconoció derechos civiles y políticos, dejando los sociales para leyes secundarias"
+    ],
+    answer: 0,
+    fb: "La Constitución promulgada el 5 de febrero de 1917 en Querétaro fue reconocida internacionalmente como la primera Constitución del mundo en incorporar derechos sociales con rango constitucional, adelantándose incluso a la Constitución de Weimar (Alemania, 1919). Sus artículos fundamentales fueron: el 3° (educación laica, gratuita y obligatoria), el 27° (propiedad originaria de la nación sobre tierras y aguas, base de la reforma agraria y la expropiación petrolera de 1938) y el 123° (derechos laborales: jornada de 8 horas, salario mínimo, derecho a huelga, protección a la maternidad, seguridad social). Esta Constitución inauguró el concepto de 'derecho social' como rama autónoma del derecho, diferente al derecho civil individual y al derecho público clásico."
+  },
+  {
+    q: "¿Cuál de las siguientes fue una reforma laboral directamente derivada del artículo 123 constitucional de 1917?",
+    opts: [
+      "La creación del IMSS en 1917 mismo",
+      "El reconocimiento del derecho a huelga, jornada máxima de 8 horas y protección a la maternidad",
+      "La prohibición total de sindicatos para evitar la inestabilidad política",
+      "La nacionalización inmediata de todas las empresas extranjeras en México"
+    ],
+    answer: 1,
+    fb: "El artículo 123 de la Constitución de 1917 estableció un catálogo amplio de derechos laborales: jornada máxima de 8 horas diurnas (7 nocturnas), descanso semanal obligatorio, protección especial para mujeres embarazadas y menores de edad, salario mínimo suficiente, participación de utilidades, derecho de asociación sindical y de huelga, indemnización por despido injustificado, y la obligación patronal de proporcionar habitaciones cómodas e higiénicas. Este artículo fue la base sobre la que se creó la Ley Federal del Trabajo de 1931 y, posteriormente, el Instituto Mexicano del Seguro Social (IMSS) en 1943. Representó el reconocimiento constitucional de la desigualdad estructural entre trabajadores y patrones, y la intervención del Estado para equilibrarla."
+  },
+  {
+    q: "El derecho OBJETIVO se diferencia del derecho SUBJETIVO en que:",
+    opts: [
+      "El derecho objetivo son las facultades del individuo; el subjetivo son las normas vigentes",
+      "El derecho objetivo es el conjunto de normas jurídicas vigentes; el subjetivo es la facultad o poder que esas normas otorgan a las personas",
+      "Ambos términos son sinónimos en la doctrina jurídica mexicana",
+      "El derecho subjetivo solo existe en el derecho penal, no en el civil"
+    ],
+    answer: 1,
+    fb: "Esta distinción es fundamental en la teoría general del derecho. El derecho OBJETIVO (también llamado derecho positivo) es el conjunto de normas jurídicas vigentes en un Estado: la Constitución, los códigos, las leyes, los reglamentos. Es externo al sujeto, existe independientemente de él. El derecho SUBJETIVO, en cambio, es la facultad, poder o prerrogativa que esas normas reconocen y otorgan a una persona determinada: el derecho de propiedad, el derecho a la educación, el derecho a contraer matrimonio. La ciencia del derecho, por su parte, es la disciplina académica que estudia y sistematiza el derecho objetivo. La trampa clásica es invertir las definiciones: mucha gente confunde 'subjetivo' con 'personal/individual' pero en sentido técnico significa 'perteneciente a un sujeto jurídico'."
+  },
+  {
+    q: "Las fuentes HISTÓRICAS del derecho son importantes porque:",
+    opts: [
+      "Son las únicas fuentes obligatorias para los jueces mexicanos",
+      "Permiten conocer el origen y evolución de las instituciones jurídicas, ayudando a interpretar el derecho vigente",
+      "Reemplazan a la legislación cuando existe un vacío legal",
+      "Solo tienen relevancia académica y no tienen ningún impacto en la práctica jurídica"
+    ],
+    answer: 1,
+    fb: "Las fuentes históricas del derecho son los documentos, textos, monumentos y vestigios que permiten conocer el derecho del pasado: las Siete Partidas de Alfonso X, las Leyes de Indias, las Constituciones anteriores a la vigente, los proyectos de codificación del siglo XIX, etc. Su importancia es triple: primero, permiten entender el origen y evolución de las instituciones jurídicas actuales (por ejemplo, entender el artículo 27 constitucional requiere conocer la historia del ejido y la hacienda); segundo, sirven como herramienta de interpretación histórica cuando el texto legal es oscuro o ambiguo; y tercero, permiten identificar qué problemas sociales motivaron la creación de determinadas normas, lo que ayuda al operador jurídico a aplicarlas correctamente. Son distintas de las fuentes formales, que crean derecho vigente, y de las fuentes materiales, que explican por qué se crea."
+  },
+  {
+    q: "Las fuentes REALES o materiales del derecho son:",
+    opts: [
+      "Los textos legales codificados como el Código Civil y el Código Penal",
+      "Los factores económicos, sociales, políticos e históricos que determinan el contenido de las normas jurídicas",
+      "Las sentencias de la Suprema Corte de Justicia de la Nación",
+      "Los libros y manuales de derecho escritos por juristas reconocidos"
+    ],
+    answer: 1,
+    fb: "Las fuentes reales o materiales son los factores de la realidad social, económica, política, cultural e histórica que determinan el contenido concreto de las normas jurídicas. Responden a la pregunta '¿por qué existe esta norma?'. Por ejemplo: la crisis agraria del Porfiriato (factor material) fue lo que determinó el contenido del artículo 27 constitucional; la explotación laboral industrial fue la fuente material del artículo 123. Se distinguen de las fuentes formales (que indican cómo se crea el derecho) y de las históricas (que muestran su evolución). Los iusnaturalistas agregan también fuentes ideales (valores, principios de justicia) como factores que moldean el contenido normativo. Comprender las fuentes materiales permite al jurista entender la ratio legis, es decir, la razón o finalidad de la ley."
+  },
+  {
+    q: "¿Cuál de las siguientes es considerada una fuente FORMAL del derecho?",
+    opts: [
+      "La opinión pública sobre un tema jurídico",
+      "Un artículo académico publicado por un catedrático de derecho",
+      "La legislación, la costumbre jurídica y la jurisprudencia",
+      "Los valores morales de la sociedad en general"
+    ],
+    answer: 2,
+    fb: "Las fuentes formales del derecho son los procesos o procedimientos reconocidos por el propio sistema jurídico para producir normas jurídicas obligatorias y con validez. En México se reconocen tres principales: (1) la legislación, que es el proceso formal a través del cual el Poder Legislativo crea leyes; (2) la costumbre jurídica, práctica social reiterada con convicción de obligatoriedad; y (3) la jurisprudencia, criterios interpretativos obligatorios emitidos por la Suprema Corte de Justicia y Tribunales Colegiados. Algunos autores añaden los principios generales del derecho y la doctrina como fuentes formales secundarias o supletorias. La diferencia entre fuente formal y material es clave: la material explica el contenido de la norma, la formal explica cómo esa norma adquiere validez jurídica."
+  },
+  {
+    q: "La legislación es fuente formal del derecho principalmente porque:",
+    opts: [
+      "Es creada por filósofos del derecho con amplio reconocimiento social",
+      "Emana de un órgano con facultades constitucionales para crearla, siguiendo un proceso formal establecido",
+      "Solo requiere la voluntad del presidente de la república para ser válida",
+      "Su validez depende de que la mayoría de la población la apruebe en referéndum"
+    ],
+    answer: 1,
+    fb: "La legislación es la fuente formal más importante del derecho mexicano porque reúne tres condiciones esenciales: primero, emana de un órgano con legitimidad democrática y competencia constitucional para legislar (el Congreso de la Unión para leyes federales, los Congresos locales para leyes estatales); segundo, sigue un procedimiento formal establecido en la propia Constitución (iniciativa, discusión, aprobación, sanción, promulgación y publicación); y tercero, genera normas de carácter general, abstracto y obligatorio para todos. Su generalidad la distingue de actos jurídicos individuales; su abstracción, de normas situacionales; y su obligatoriedad, de simples recomendaciones. La Constitución es la ley suprema, y toda la legislación secundaria debe ser congruente con ella bajo pena de inconstitucionalidad."
+  },
+  {
+    q: "¿Cuál es el orden correcto del proceso legislativo mexicano?",
+    opts: [
+      "Promulgación → Iniciativa → Discusión → Aprobación → Publicación",
+      "Iniciativa → Discusión → Aprobación → Sanción/Promulgación → Publicación → Vigencia",
+      "Aprobación → Iniciativa → Sanción → Discusión → Vigencia",
+      "Iniciativa → Aprobación → Iniciativa de veto → Publicación → Derogación"
+    ],
+    answer: 1,
+    fb: "El proceso legislativo mexicano, regulado en los artículos 71 y 72 constitucionales, comprende seis etapas: (1) Iniciativa: derecho de presentar proyectos de ley, que corresponde al presidente, diputados, senadores, legislaturas estatales y ciudadanos; (2) Discusión: análisis y debate del proyecto en comisiones y en el pleno de ambas cámaras (Cámara de Origen y Cámara Revisora); (3) Aprobación: votación favorable por mayoría (simple o calificada según el caso); (4) Sanción: el Poder Ejecutivo puede promulgar la ley o ejercer su derecho de veto (observaciones); (5) Promulgación y publicación: el presidente ordena publicarla en el Diario Oficial de la Federación; (6) Vigencia: la ley entra en vigor en la fecha señalada o, si no se indica, tres días después de su publicación en el DOF."
+  },
+  {
+    q: "Para que la costumbre jurídica sea fuente del derecho, debe cumplir DOS requisitos esenciales:",
+    opts: [
+      "Ser muy antigua y estar escrita en documentos oficiales",
+      "Ser aprobada por el Congreso y publicada en el Diario Oficial de la Federación",
+      "Tener un elemento material (práctica reiterada y uniforme) y uno psicológico (convicción de obligatoriedad)",
+      "Ser adoptada por la Suprema Corte y aplicarse en al menos cinco estados del país"
+    ],
+    answer: 2,
+    fb: "La costumbre jurídica requiere dos elementos clásicos identificados desde el derecho romano: (1) El elemento objetivo o material (corpus): consiste en la repetición constante, uniforme, generalizada y prolongada en el tiempo de determinadas conductas dentro de una comunidad. No basta que sea frecuente, debe ser prácticamente universal en ese grupo social; (2) El elemento subjetivo o psicológico (opinio iuris seu necessitatis): es la convicción colectiva de que esa práctica no es meramente un hábito social sino una obligación jurídicamente exigible, es decir, que su incumplimiento acarrea consecuencias de derecho. En México la costumbre opera principalmente como fuente supletoria (cuando la ley no regula una situación) o interpretativa (para aclarar el sentido de una norma). En el derecho indígena y comunitario tiene un papel aún más relevante, reconocido por el artículo 2° constitucional."
+  },
+  {
+    q: "La diferencia FUNDAMENTAL entre derecho público y derecho privado es:",
+    opts: [
+      "El derecho público regula relaciones entre particulares; el privado regula al Estado",
+      "El derecho público regula la organización del Estado y sus relaciones con los ciudadanos; el privado regula relaciones entre particulares en plano de igualdad",
+      "Solo existe derecho público en México; el privado fue abolido con la Revolución",
+      "El derecho público es obligatorio; el privado es voluntario y puede ignorarse"
+    ],
+    answer: 1,
+    fb: "La distinción derecho público/privado es una de las más clásicas de la ciencia jurídica, formulada desde el derecho romano (Ulpiano: 'publicum ius est quod ad statum rei Romanae spectat, privatum quod ad singulorum utilitatem'). El derecho PÚBLICO regula relaciones donde el Estado actúa con imperium (poder de mando): derecho constitucional, administrativo, penal, fiscal, procesal, internacional público. El Estado siempre está presente como autoridad con facultades coercitivas. El derecho PRIVADO regula relaciones entre particulares en un plano de igualdad jurídica, donde predomina la autonomía de la voluntad: derecho civil, mercantil, internacional privado. La distinción tiene consecuencias prácticas: en derecho público rige el principio de legalidad (solo se puede hacer lo que la ley permite); en derecho privado, el principio de autonomía (se puede hacer todo lo que la ley no prohíbe)."
+  },
+  {
+    q: "El derecho constitucional en México tiene como función principal:",
+    opts: [
+      "Regular exclusivamente los procesos electorales y la selección de funcionarios",
+      "Servir de base y límite a todo el ordenamiento jurídico, organizar los poderes del Estado y garantizar los derechos fundamentales",
+      "Resolver disputas entre ciudadanos mediante tribunales especializados",
+      "Establecer las penas aplicables a los delitos más graves del país"
+    ],
+    answer: 1,
+    fb: "El derecho constitucional es la rama del derecho público que estudia la norma fundamental del Estado: la Constitución. Sus funciones principales son: (1) Organizar la estructura del Estado: determina los poderes (Legislativo, Ejecutivo, Judicial), su integración, sus atribuciones y sus límites recíprocos; (2) Establecer el catálogo de derechos humanos y garantías individuales y sociales que el Estado está obligado a respetar y promover; (3) Fijar los principios que orientan todo el sistema jurídico, a los que el resto de las normas deben ajustarse (supremacía constitucional, art. 133 CPEUM); (4) Regular la producción normativa: quién puede crear leyes, con qué procedimiento y con qué límites. En México, el derecho constitucional adquirió una dimensión nueva con la reforma de derechos humanos de 2011, que incorporó el control de convencionalidad y el principio pro persona."
+  },
+  {
+    q: "La importancia de la Constitución Política dentro del sistema jurídico mexicano radica en que:",
+    opts: [
+      "Puede ser modificada fácilmente por decreto presidencial cuando sea necesario",
+      "Es la norma suprema del ordenamiento; ninguna ley puede contradecirla y toda autoridad está sujeta a ella",
+      "Solo es aplicable a los tres poderes federales, no a los estados ni municipios",
+      "Su supremacía fue reconocida únicamente a partir de la reforma de 2011"
+    ],
+    answer: 1,
+    fb: "La supremacía constitucional, consagrada en el artículo 133 de la CPEUM, implica que la Constitución es la norma de mayor jerarquía del sistema jurídico mexicano: ninguna ley ordinaria, decreto, reglamento o acto de autoridad puede contravenir sus disposiciones. Su importancia dentro del sistema jurídico es múltiple: (1) Es fuente de validez de todo el ordenamiento jurídico secundario; (2) Limita el poder de todos los órganos del Estado, incluido el propio legislador; (3) Establece los derechos fundamentales como parámetro de actuación de las autoridades; (4) A partir de 2011, la Constitución debe interpretarse de forma armónica con los tratados internacionales de derechos humanos (bloque de constitucionalidad). Los mecanismos para hacerla valer son el juicio de amparo, las controversias constitucionales y las acciones de inconstitucionalidad, todos ellos resueltos por la Suprema Corte de Justicia de la Nación."
+  },
+  {
+    q: "La función PRINCIPAL del derecho administrativo es:",
+    opts: [
+      "Sancionar penalmente a los funcionarios corruptos del gobierno",
+      "Regular la organización y funcionamiento de la administración pública y sus relaciones con los ciudadanos",
+      "Resolver conflictos entre empresas privadas que contratan con el gobierno",
+      "Establecer los impuestos que deben pagar las personas físicas y morales"
+    ],
+    answer: 1,
+    fb: "El derecho administrativo es la rama del derecho público que regula la organización, funcionamiento, atribuciones y límites de la Administración Pública (federal, estatal y municipal), así como las relaciones jurídicas que se generan entre ésta y los particulares. Sus funciones principales son: regular cómo el Estado presta servicios públicos (salud, educación, seguridad); establecer los procedimientos mediante los cuales la autoridad emite actos administrativos (permisos, licencias, concesiones, sanciones); y proteger los derechos de los ciudadanos frente a actos administrativos ilegales o arbitrarios a través del juicio contencioso-administrativo (Tribunal Federal de Justicia Administrativa). El derecho administrativo se rige por el principio de legalidad: la autoridad solo puede hacer lo que la ley expresamente le faculta, a diferencia de los particulares que pueden hacer todo lo que la ley no prohíbe."
+  },
+  {
+    q: "El derecho penal tiene como objetivo PRINCIPAL:",
+    opts: [
+      "Obtener reparación económica para las víctimas de delitos",
+      "Proteger los bienes jurídicos fundamentales de la sociedad mediante la definición de delitos y la imposición de penas",
+      "Regular exclusivamente los delitos cometidos por funcionarios públicos",
+      "Garantizar que todos los acusados sean declarados culpables para proteger a la sociedad"
+    ],
+    answer: 1,
+    fb: "El derecho penal es la rama del derecho público que define las conductas consideradas delitos, establece las penas y medidas de seguridad aplicables, y regula el poder punitivo del Estado. Sus objetivos son múltiples: (1) Proteger bienes jurídicos fundamentales: la vida, la integridad física, la libertad, el patrimonio, la seguridad pública, etc.; (2) Prevención general: disuadir a la población de cometer delitos mediante la amenaza de la pena; (3) Prevención especial: rehabilitar al sentenciado y evitar su reincidencia; (4) Retribución: responder al daño social causado por el delito. El derecho penal mexicano se rige por principios garantistas: legalidad (nullum crimen nulla poena sine lege: no hay delito ni pena sin ley previa), culpabilidad (se sanciona la conducta, no la personalidad), proporcionalidad (la pena debe ser proporcional a la gravedad del delito) y presunción de inocencia."
+  },
+  {
+    q: "¿Cuál de las siguientes NO es una pena prevista en el derecho penal mexicano?",
+    opts: [
+      "Prisión preventiva como pena definitiva",
+      "Multa económica",
+      "Trabajo en favor de la comunidad",
+      "Decomiso de bienes producto del delito"
+    ],
+    answer: 0,
+    fb: "Esta pregunta tiene trampa: la prisión PREVENTIVA es una medida cautelar procesal (no una pena), cuya finalidad es garantizar que el imputado no se sustraiga del proceso o no obstaculice la investigación. Solo puede aplicarse cuando existen datos de prueba que establezcan que se cometió un hecho delictivo y que el imputado probablemente lo cometió. Las penas establecidas en el Código Penal Federal incluyen: prisión (como condena definitiva tras sentencia), multa, trabajo en favor de la comunidad, decomiso de bienes producto del delito, suspensión o privación de derechos, destitución e inhabilitación de funcionarios públicos. Las medidas de seguridad se aplican a inimputables (personas que no pueden comprender el carácter ilícito de sus actos) e incluyen tratamiento médico o psiquiátrico. La Constitución prohíbe expresamente la pena de muerte, las mutilaciones y la tortura."
+  },
+  {
+    q: "El derecho civil en México comprende principalmente:",
+    opts: [
+      "Solo el derecho de familia y las sucesiones hereditarias",
+      "Las relaciones jurídicas entre particulares en materia de personas, familia, bienes, contratos, sucesiones y obligaciones",
+      "Exclusivamente los contratos mercantiles entre empresas",
+      "Los derechos políticos de los ciudadanos como el voto y la participación democrática"
+    ],
+    answer: 1,
+    fb: "El derecho civil es la rama más amplia del derecho privado y constituye el derecho común que regula las relaciones jurídicas entre particulares. En México se organiza principalmente en cinco grandes áreas: (1) Derecho de las personas: regula el nacimiento de la personalidad jurídica, el nombre, el estado civil, el domicilio y la capacidad; (2) Derecho de familia: matrimonio, divorcio, filiación, adopción, patria potestad, tutela y alimentos; (3) Derecho de bienes: clasifica y regula los bienes (muebles, inmuebles, fungibles, etc.) y los derechos reales (propiedad, usufructo, servidumbres, hipoteca); (4) Derecho de obligaciones y contratos: cómo nacen, transmiten y extinguen las obligaciones; tipos de contratos (compraventa, arrendamiento, donación, mutuo, etc.); (5) Derecho sucesorio: transmisión del patrimonio por causa de muerte, testamentos y sucesión legítima (intestamentaria). En México existe un Código Civil Federal y códigos civiles en cada uno de los 31 estados y la CDMX."
+  },
+  {
+    q: "La codificación en el derecho mexicano fue importante porque:",
+    opts: [
+      "Permitió que cada juez creara sus propias normas sin seguir un sistema unificado",
+      "Sistematizó y unificó las normas jurídicas dispersas en un cuerpo ordenado, brindando certeza, seguridad jurídica y accesibilidad",
+      "Eliminó la necesidad de abogados al hacer el derecho tan sencillo que todos podían aplicarlo",
+      "Solo tuvo importancia histórica durante el siglo XIX y hoy ya no tiene relevancia"
+    ],
+    answer: 1,
+    fb: "La codificación es el proceso de reunir, sistematizar y unificar en un cuerpo normativo único (código) las normas jurídicas dispersas sobre una misma materia. Su importancia en México es histórica y práctica: (1) Histórica: los primeros códigos mexicanos del siglo XIX (Código Civil de 1870, 1884; Código de Comercio de 1884) representaron la ruptura con la legislación colonial española y la construcción de un sistema jurídico nacional propio; (2) Certeza jurídica: los códigos ofrecen un texto accesible, sistemático y predecible que evita la dispersión normativa; (3) Igualdad formal: al tener una sola ley para todos, se supera el sistema de fueros y privilegios del Antiguo Régimen; (4) Accesibilidad: facilita el conocimiento del derecho tanto por juristas como por ciudadanos. El modelo de referencia fue el Código Civil francés (Código Napoleónico, 1804), que influyó profundamente en los códigos civiles latinoamericanos del siglo XIX."
+  },
+  {
+    q: "El derecho procesal mexicano tiene como finalidad:",
+    opts: [
+      "Definir qué conductas son delitos y qué penas les corresponden",
+      "Establecer los procedimientos y garantías para hacer valer los derechos ante los órganos jurisdiccionales",
+      "Regular únicamente los juicios civiles, no los penales ni los laborales",
+      "Sustituir al derecho sustantivo cuando existen vacíos legales"
+    ],
+    answer: 1,
+    fb: "El derecho procesal (también llamado derecho adjetivo, en contraposición al derecho sustantivo o material) es la rama que establece el conjunto de normas, principios y garantías que regulan la actividad jurisdiccional del Estado: cómo se accede a los tribunales, cómo se sustancia un juicio, cuáles son los derechos y obligaciones de las partes, qué recursos proceden contra las resoluciones y cómo se ejecutan las sentencias. Su finalidad esencial es hacer efectivos los derechos establecidos en las leyes sustantivas: sin derecho procesal, el derecho civil o penal serían ineficaces porque no existiría mecanismo para hacerlos valer. En México existe derecho procesal civil, penal (ahora regido por el Código Nacional de Procedimientos Penales de 2014), laboral, administrativo, fiscal y constitucional (amparo). Todos se rigen por el principio constitucional del debido proceso legal (artículo 14 CPEUM)."
+  },
+  {
+    q: "El derecho procesal INQUISITIVO se caracteriza principalmente por:",
+    opts: [
+      "Separar completamente las funciones de investigar, acusar y juzgar",
+      "Concentrar en el juez las funciones de investigar, acusar y dictar sentencia, limitando los derechos del acusado",
+      "Garantizar la publicidad absoluta de todos los procedimientos judiciales",
+      "Dar a las partes plena libertad para disponer del proceso y sus pruebas"
+    ],
+    answer: 1,
+    fb: "Los tres sistemas procesales se distinguen por quién controla el proceso y con qué principios opera: El sistema INQUISITIVO concentra en el juez las funciones de investigar, acusar y juzgar; los procesos suelen ser escritos, secretos y el acusado tiene pocas garantías de defensa. Fue el sistema predominante en México hasta la reforma penal de 2008. El sistema DISPOSITIVO (propio del proceso civil) otorga a las partes el control del proceso: ellas determinan qué se debate, qué pruebas se ofrecen y pueden disponer de sus derechos (transigir, desistirse, allanarse); el juez es un árbitro imparcial. El sistema SOCIAL (propio del proceso laboral y agrario) reconoce la desigualdad estructural entre las partes y faculta al juez a suplir las deficiencias de la parte débil (trabajador, campesino), ordenar pruebas de oficio e interpretar la ley en su favor. México adoptó el sistema ACUSATORIO ADVERSARIAL con la reforma constitucional de 2008 (art. 20), plenamente vigente desde 2016."
+  },
+  {
+    q: "En el proceso judicial, una DEMANDA es:",
+    opts: [
+      "La sentencia definitiva que dicta el juez al finalizar el juicio",
+      "El escrito mediante el cual el actor ejercita su acción y expone sus pretensiones ante el órgano jurisdiccional",
+      "La respuesta que da el demandado a las acusaciones del actor",
+      "Una medida cautelar para asegurar bienes durante el juicio"
+    ],
+    answer: 1,
+    fb: "La demanda es el acto procesal formal mediante el cual el actor (demandante) ejercita su acción ante el órgano jurisdiccional competente, inaugurando el proceso judicial. En México, toda demanda debe contener: (1) El tribunal ante quien se dirige; (2) El nombre y domicilio del actor y del demandado; (3) La narración de los hechos en que se funda la acción; (4) El fundamento jurídico (preceptos legales aplicables); (5) Las prestaciones que se reclaman (lo que se pide al juez); (6) El ofrecimiento de pruebas. Es importante no confundirla con la contestación de demanda (respuesta del demandado), ni con la acusación del Ministerio Público en materia penal (que se llama escrito de acusación o formulación de cargos). Una demanda defectuosa puede ser desechada o prevenida para que se corrija. Su presentación interrumpe la prescripción de la acción."
+  },
+  {
+    q: "Las notificaciones y términos procesales son fundamentales en un juicio porque:",
+    opts: [
+      "Solo sirven para cumplir formalidades burocráticas sin impacto real en el proceso",
+      "Garantizan que las partes tengan conocimiento oportuno de los actos procesales y tiempo suficiente para ejercer su derecho de defensa",
+      "Permiten al juez alargar indefinidamente el proceso cuando lo considera necesario",
+      "Son exclusivas del proceso penal y no aplican en juicios civiles o laborales"
+    ],
+    answer: 1,
+    fb: "Las notificaciones son los actos procesales mediante los cuales el órgano jurisdiccional da a conocer formalmente a las partes y a terceros las resoluciones judiciales (autos, sentencias, acuerdos). Pueden ser: personales (en el domicilio del interesado o en estrados), por lista, por correo electrónico certificado o por edictos (cuando se desconoce el domicilio). Su importancia radica en que sin notificación válida, la resolución no produce efectos jurídicos frente al notificado. Los términos (o plazos procesales) son los períodos de tiempo establecidos por la ley para realizar actos procesales: contestar la demanda, interponer recursos, ofrecer pruebas, formular alegatos. Son de orden público y generalmente perentorios (si no se actúa dentro del plazo, se pierde el derecho). Juntos, notificaciones y términos son las dos garantías técnicas del derecho de audiencia consagrado en el artículo 14 constitucional: nadie puede ser privado de sus derechos sin ser oído y vencido en juicio."
+  },
+  {
+    q: "¿Cuál es el orden correcto de las etapas del proceso judicial mexicano?",
+    opts: [
+      "Sentencia → Pruebas → Demanda → Alegatos → Notificación",
+      "Demanda → Contestación → Ofrecimiento de pruebas → Alegatos → Sentencia",
+      "Alegatos → Demanda → Sentencia → Pruebas → Contestación",
+      "Notificación → Sentencia → Demanda → Contestación → Pruebas"
+    ],
+    answer: 1,
+    fb: "El proceso judicial mexicano sigue una estructura lógica y secuencial: (1) Demanda: el actor presenta su escrito inicial ante el juez competente; (2) Admisión y emplazamiento: el juez admite la demanda y notifica (emplaza) al demandado para que comparezca; (3) Contestación de demanda: el demandado responde a las pretensiones del actor, puede oponer excepciones y reconvenir; (4) Período probatorio: se ofrece, admite y desahoga el material probatorio (documentos, testimoniales, periciales, inspecciones); (5) Alegatos: las partes formulan sus argumentos finales sobre los hechos y el derecho aplicable; (6) Sentencia: el juez resuelve el conflicto aplicando el derecho a los hechos probados; (7) Recursos e impugnaciones: apelación, revisión, amparo; (8) Ejecución de sentencia: se hace cumplir lo resuelto. En materia penal el sistema acusatorio tiene etapas distintas: investigación, formulación de cargos, audiencia intermedia, juicio oral y sentencia."
+  },
+  {
+    q: "La función del Ministerio Público en el proceso penal es:",
+    opts: [
+      "Defender al acusado y garantizar que se respeten sus derechos fundamentales",
+      "Representar a la sociedad, investigar los delitos y ejercer la acción penal ante los tribunales",
+      "Dictar la sentencia condenatoria o absolutoria según las pruebas aportadas",
+      "Vigilar que los jueces apliquen correctamente las leyes procesales"
+    ],
+    answer: 1,
+    fb: "El Ministerio Público (MP) es la institución del Estado que representa el interés social en el proceso penal. Sus funciones principales son: (1) Investigación: dirige a la Policía de Investigación en la recopilación de datos de prueba sobre los hechos delictivos; (2) Ejercicio de la acción penal: una vez integrada la carpeta de investigación, decide si formula cargos ante el juez de control; (3) Acusación: en el juicio oral es quien sustenta la teoría del caso y presenta las pruebas para demostrar la culpabilidad del imputado. Clave para el examen: el MP NO defiende al acusado (esa es función del Defensor Público o el abogado particular), NO dicta sentencias (eso corresponde al juez de juicio oral) y NO impone medidas cautelares (el juez de control las decide a petición del MP). Esta separación de funciones es la esencia del sistema acusatorio adversarial instaurado por la reforma constitucional de 2008 y el CNPP de 2014."
+  },
+  {
+    q: "Antes de la reforma judicial de 2023-2024, el Consejo de la Judicatura Federal era responsable de:",
+    opts: [
+      "Redactar las iniciativas de ley que enviaría el presidente al Congreso",
+      "Administrar, disciplinar y vigilar al Poder Judicial de la Federación, excepto a la SCJN",
+      "Nombrar directamente a todos los ministros de la Suprema Corte de Justicia",
+      "Supervisar la recaudación fiscal y el gasto del gobierno federal"
+    ],
+    answer: 1,
+    fb: "El Consejo de la Judicatura Federal (CJF), creado por la reforma constitucional de 1994 impulsada por el presidente Zedillo, era el órgano de administración, vigilancia, disciplina y carrera judicial del Poder Judicial de la Federación, con excepción de la Suprema Corte de Justicia de la Nación y el Tribunal Electoral. Sus atribuciones eran: nombramiento, adscripción, ratificación y remoción de magistrados de circuito y jueces de distrito; administración del presupuesto del PJF; imposición de sanciones disciplinarias a jueces y magistrados; y emisión de acuerdos generales sobre el funcionamiento de los tribunales. Con la reforma judicial de 2023-2024 impulsada por el presidente López Obrador y concretada por la presidenta Claudia Sheinbaum, el CJF fue sustituido por el Tribunal de Disciplina Judicial y la Escuela Federal de Formación Judicial, dentro de una profunda reestructuración del Poder Judicial."
+  },
+  {
+    q: "Históricamente, el Consejo de la Judicatura Federal se integraba por:",
+    opts: [
+      "Siete miembros: el presidente de la SCJN, tres designados por la misma Corte, dos por el Senado y uno por el Ejecutivo",
+      "Cinco ministros elegidos por sufragio popular cada seis años",
+      "Nueve consejeros nombrados exclusivamente por el presidente de la república",
+      "Once integrantes, todos provenientes de la carrera judicial sin intervención de otros poderes"
+    ],
+    answer: 0,
+    fb: "Antes de la reforma judicial de 2024, el CJF se integraba por 7 consejeros: (1) El presidente de la Suprema Corte de Justicia de la Nación, quien también presidía el CJF; (2) Tres consejeros designados por el Pleno de la SCJN, provenientes de la carrera judicial (magistrados o jueces federales); (3) Dos consejeros designados por el Senado de la República; (4) Un consejero designado por el presidente de la República. Esta composición buscaba un equilibrio entre los tres poderes, aunque en la práctica fue objeto de críticas por la influencia que el Poder Judicial tenía sobre su propio órgano de control (cuatro de los siete integrantes eran designados por la propia SCJN o provenían de la carrera judicial). Los consejeros duraban cinco años en su cargo, con posibilidad de una sola reelección."
+  },
+  {
+    q: "¿Cuál era una crítica central al Poder Judicial Federal en México, según los análisis doctrinales?",
+    opts: [
+      "Que los jueces trabajaban demasiado y los procesos eran excesivamente rápidos",
+      "Falta de independencia real, nepotismo, corrupción, opacidad en nombramientos y desigualdad en el acceso a la justicia",
+      "Que existían demasiados jueces federales para la carga de trabajo existente",
+      "Que las sentencias de la SCJN eran demasiado progresistas y afectaban la estabilidad jurídica"
+    ],
+    answer: 1,
+    fb: "Los estudios académicos y diagnósticos institucionales sobre el Poder Judicial Federal mexicano identificaron múltiples problemas estructurales: (1) Falta de independencia real frente al Ejecutivo, especialmente en sexenios anteriores donde las decisiones de la SCJN favorecían sistemáticamente al gobierno; (2) Nepotismo y endogamia: los nombramientos de jueces y magistrados respondían frecuentemente a relaciones familiares o de lealtad personal dentro del propio PJF, no a méritos objetivos; (3) Corrupción: casos documentados de jueces que recibían pagos para resolver a favor de determinadas partes, incluyendo cárteles del crimen organizado; (4) Opacidad en el CJF: los procedimientos disciplinarios contra jueces eran opacos y raramente resultaban en sanciones efectivas; (5) Desigualdad en el acceso a la justicia: el costo económico, la complejidad técnica y las barreras geográficas impedían a personas de escasos recursos acceder efectivamente al sistema judicial federal. Estas críticas fueron el argumento central para justificar la reforma judicial de 2024."
+  }
+];
+
+let answered = {};
+let score = 0;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz');
+  container.innerHTML = '';
+  questions.forEach((q, i) => {
+    const letters = ['A', 'B', 'C', 'D'];
+    const optsHTML = q.opts.map((o, j) => `
+      <div class="option" id="opt-${i}-${j}" onclick="selectOption(${i}, ${j})">
+        <span class="opt-letter">${letters[j]}</span>
+        <span class="opt-text">${o}</span>
+      </div>
+    `).join('');
+    container.innerHTML += `
+      <div class="question-card" id="card-${i}" style="animation-delay:${i*0.04}s">
+        <div class="q-header">
+          <div class="q-num">${i+1}</div>
+          <div class="q-text">${q.q}</div>
+        </div>
+        <div class="options" id="opts-${i}">${optsHTML}</div>
+        <div class="feedback" id="fb-${i}"></div>
+      </div>
+    `;
+  });
+  updateProgress();
+}
+
+function selectOption(qIdx, optIdx) {
+  if (answered[qIdx] !== undefined) return;
+  answered[qIdx] = optIdx;
+  const q = questions[qIdx];
+  const opts = document.querySelectorAll(`#opts-${qIdx} .option`);
+  opts.forEach(o => o.classList.add('disabled'));
+  const fb = document.getElementById(`fb-${qIdx}`);
+  if (optIdx === q.answer) {
+    document.getElementById(`opt-${qIdx}-${optIdx}`).classList.add('correct');
+    fb.className = 'feedback correct-fb show';
+    fb.innerHTML = `<strong>✓ ¡Correcto!</strong> ${q.fb}`;
+    score++;
+  } else {
+    document.getElementById(`opt-${qIdx}-${optIdx}`).classList.add('wrong');
+    document.getElementById(`opt-${qIdx}-${q.answer}`).classList.add('correct');
+    fb.className = 'feedback wrong-fb show';
+    fb.innerHTML = `<strong>✗ Incorrecto.</strong> ${q.fb}`;
+  }
+  updateProgress();
+  if (Object.keys(answered).length === questions.length) {
+    setTimeout(() => {
+      document.getElementById('btnSubmit').style.display = 'none';
+      showResults(score);
+    }, 600);
+  }
+}
+
+function updateProgress() {
+  const n = Object.keys(answered).length;
+  document.getElementById('progressFill').style.width = (n/30*100) + '%';
+  document.getElementById('progressText').textContent = n + ' / 30';
+}
+
+function submitQuiz() {
+  const n = Object.keys(answered).length;
+  if (n < 30) {
+    const unanswered = [];
+    for (let i=0; i<30; i++) { if (answered[i] === undefined) unanswered.push(i+1); }
+    alert(`Te faltan ${30-n} pregunta(s) por responder: #${unanswered.slice(0,5).join(', ')}${unanswered.length>5?' ...':''}`);
+    return;
+  }
+  document.getElementById('btnSubmit').style.display = 'none';
+  showResults(score);
+}
+
+function showResults(score) {
+  const pct = Math.round(score/30*100);
+  const ring = document.getElementById('scoreRing');
+  ring.style.setProperty('--pct', pct + '%');
+  document.getElementById('scoreNum').textContent = score;
+  const title = pct >= 80 ? '¡Excelente trabajo!' : pct >= 60 ? 'Buen esfuerzo' : 'Sigue practicando';
+  const msg = pct >= 80
+    ? `Obtuviste ${score}/30 (${pct}%). Dominas muy bien los temas del segundo parcial.`
+    : pct >= 60
+    ? `Obtuviste ${score}/30 (${pct}%). Revisa los temas donde fallaste y vuelve a intentarlo.`
+    : `Obtuviste ${score}/30 (${pct}%). Te recomendamos repasar los temas a fondo antes del examen.`;
+  document.getElementById('resultsTitle').textContent = title;
+  document.getElementById('resultsMsg').textContent = msg;
+  const resultsEl = document.getElementById('results');
+  resultsEl.classList.add('show');
+  resultsEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function retryQuiz() {
+  answered = {};
+  score = 0;
+  document.getElementById('btnSubmit').style.display = '';
+  document.getElementById('results').classList.remove('show');
+  renderQuiz();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+renderQuiz();
+</script>
+</body>
+</html>
